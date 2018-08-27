@@ -1,0 +1,127 @@
+#############################################################################################
+# This Feature file will test the the E2E functionality of the GOL 30 minute bypass feature
+# The following IFS services are tested in this flow:
+# GBP
+# API Decorator
+# SessionManagement
+# IFSUTILS
+#
+# @Author Brian DeSimone
+# @Date 11/14/2017
+#############################################################################################
+@GOLBypass
+Feature: Validate GOL Bypass 30 minute
+
+  @HealthCheck
+  Scenario: Validate that GOL has bypass for 30 minutes (shorter for test purposes of smoke test)
+#    Given I generate a bypass airline object for airline: "GLO"
+#    When I send an IFSUTILS POST request to "/v1/bypassrule/airline" with the generated body
+#    Then the response status should be "201"
+#    And I save the JSON at "id" as "airlineRuleId"
+#    Given I generate a bypass model to disable global and enable bypass rules for airline: "GLO"
+#    When I send an IFSUTILS PUT request to "/v1/bypassrule/airline-global" with the generated body
+#    Then the response status should be "200"
+#    And I wait for 60 seconds
+    When I generate a LAPTOP GBP SessionId with airlineCode = "GLO", tailNumber = "0GOQE", and deviceMacAddress = "random" and store it at "uxdid"
+    And I send a CloudDao GET request to "/v2/token/%{uxdid}"
+    Then the response status should be "200"
+    And the JSON response at "uxdId" should be "%{uxdid}"
+    And I save the JSON at "simpleDeviceInfo.clientIp" as "ipAddress"
+    And I save the JSON at "simpleDeviceInfo.macAddress" as "macAddress"
+    Given I generate a bypass status object for airline with code: "GLO" and tail: "0GOQE"
+    When I send an IFSUTILS POST request to "/v1/bypassrule/status" with the generated body
+    Then the response status should be "200"
+    And the JSON response at "bypass_enabled" should be "true"
+    And I save the JSON at "airline_bypass_rules[0].redirect_url" as "redirect_url"
+    And I save the JSON at "airline_bypass_rules[0].active_users" as "active_users"
+    And I save the JSON at "bypass_user" as "bypass_user"
+    And I save the JSON at "airline_bypass_rules[0].airline_code" as "airline_code"
+    Given I generate a bypass promotion token with the following attributes:
+      | promotion_name | nissan          |
+      | redirect_url   | %{redirect_url} |
+      | active_users   | %{active_users} |
+      | bypass_user    | %{bypass_user}  |
+      | airline_code   | %{airline_code} |
+      | tail_number    | 0GOQE           |
+    When I send a GBP POST request to "/promobypasstoken" with the generated body
+    Then the response status should be "200"
+    And I save the JSON at "token" as "token"
+    When I send an APIDecorator GET request to "/v2/captcha/math/%{uxdid}"
+    Then the response status should be "200"
+    And I save the JSON at "captchaValue" as "captchaValue"
+    And I validate captcha stored at "captchaValue" and store the result at "captchaResult"
+    Given I generate a bypass captcha validation object for uxdid: "%{uxdid}" with captchaValue: "%{captchaResult}"
+    When I validate captcha for bypass with the cookie: "%{token}"
+    Then the response status should be "200"
+    When I send a STUB GET request to "/abp/page/aaaActivate.do?gbpsessionid=%{uxdid}"
+    Then the response status should be "200"
+    When I retrieve user session info with uxdId: "%{uxdid}"
+    Then the response status should be "200"
+    And the XML response should be the following:
+      | java.object.void[0]                | true                           |
+      | java.object.void[1].object.void[0] | %{ipAddress}                   |
+      | java.object.void[1].object.void[1] | bypass                         |
+      | java.object.void[1].object.void[2] | BYPASS                         |
+      | java.object.void[1].object.void[3] | %{uxdid}                       |
+      | java.object.void[1].object.void[4] | BYPASS_15M/GLO_nissan/%{uxdid} |
+      | java.object.void[2]                | %{macAddress}                  |
+#    Given I generate a bypass model to disable global and disable bypass rules for airline: "GLO"
+#    When I send an IFSUTILS PUT request to "/v1/bypassrule/airline-global" with the generated body
+#    Then the response status should be "200"
+#    When I send an IFSUTILS DELETE request to "/v1/bypassrule/airline/id/%{airlineRuleId}"
+#    Then the response status should be "200"
+
+  @HealthCheck
+  Scenario: Validate that proper splash page is displayed for bypass nissan promotion
+#    Given I generate a bypass airline object for airline: "GLO"
+#    When I send an IFSUTILS POST request to "/v1/bypassrule/airline" with the generated body
+#    Then the response status should be "201"
+#    And I save the JSON at "id" as "airlineRuleId"
+#    Given I generate a bypass model to disable global and enable bypass rules for airline: "GLO"
+#    When I send an IFSUTILS PUT request to "/v1/bypassrule/airline-global" with the generated body
+#    Then the response status should be "200"
+#    And I wait for 60 seconds
+    When I generate a LAPTOP GBP SessionId with airlineCode = "GLO", tailNumber = "0GOQE", and deviceMacAddress = "random" and store it at "uxdid"
+    And I send a CloudDao GET request to "/v2/token/%{uxdid}"
+    Then the response status should be "200"
+    And the JSON response at "uxdId" should be "%{uxdid}"
+    And I save the JSON at "simpleDeviceInfo.clientIp" as "ipAddress"
+    And I save the JSON at "simpleDeviceInfo.macAddress" as "macAddress"
+    Given I generate a bypass status object for airline with code: "GLO" and tail: "0GOQE"
+    When I send an IFSUTILS POST request to "/v1/bypassrule/status" with the generated body
+    Then the response status should be "200"
+    And the JSON response at "bypass_enabled" should be "true"
+    And I save the JSON at "airline_bypass_rules[0].redirect_url" as "redirect_url"
+    And I save the JSON at "airline_bypass_rules[0].active_users" as "active_users"
+    And I save the JSON at "bypass_user" as "bypass_user"
+    And I save the JSON at "airline_bypass_rules[0].airline_code" as "airline_code"
+    Given I generate a bypass promotion token with the following attributes:
+      | promotion_name | nissan          |
+      | redirect_url   | %{redirect_url} |
+      | active_users   | %{active_users} |
+      | bypass_user    | %{bypass_user}  |
+      | airline_code   | %{airline_code} |
+      | tail_number    | 0GOQE           |
+    When I send a GBP POST request to "/promobypasstoken" with the generated body
+    Then the response status should be "200"
+    And I save the JSON at "token" as "token"
+    When I send an APIDecorator GET request to "/v2/captcha/math/%{uxdid}"
+    Then the response status should be "200"
+    And I save the JSON at "captchaValue" as "captchaValue"
+    And I validate captcha stored at "captchaValue" and store the result at "captchaResult"
+    Given I generate a bypass captcha validation object for uxdid: "%{uxdid}" with captchaValue: "%{captchaResult}"
+    When I validate captcha for bypass with the cookie: "%{token}"
+    Then the response status should be "200"
+    When I send a STUB GET request to "/abp/page/aaaActivate.do?gbpsessionid=%{uxdid}"
+    Then the response status should be "200"
+    Given I start selenium
+    When I navigate to "http://airborne.gogoinflight.com/app/glo/ifc/#bypass/nissan"
+    Then the page title should be "GOL In-Flight Connectivity"
+    And the page title should not be "Cnn"
+    And the page url should be "http://airborne.gogoinflight.com/app/glo/ifc/#bypass/nissan"
+    And I shut down selenium
+#    Given I generate a bypass model to disable global and disable bypass rules for airline: "GLO"
+#    When I send an IFSUTILS PUT request to "/v1/bypassrule/airline-global" with the generated body
+#    Then the response status should be "200"
+#    When I send an IFSUTILS DELETE request to "/v1/bypassrule/airline/id/%{airlineRuleId}"
+#    Then the response status should be "200"

@@ -1,0 +1,527 @@
+#############################################################################################
+# This Feature file will test the the E2E functionality of Switch Device
+# The following IFS services are tested in this flow:
+# GBP
+# API Decorator
+# CloudDao
+# IFSUTILS
+#
+# @Author Brian DeSimone
+# @Date 05/22/2017
+#############################################################################################
+Feature: Validate Switch Device Functionality
+
+  @SwitchDevice @HealthCheck @Regression
+  Scenario: Validate a successful switch device full flow (smoke test)
+    When I generate a mobile GBP SessionId with airlineCode = "DAL", tailNumber = "0DAL2", and deviceMacAddress = "random" and store it at "uxdid"
+    And I send a CloudDao GET request to "/v2/token/%{uxdid}"
+    Then the response status should be "200"
+    And the JSON response at "uxdId" should be "%{uxdid}"
+    When I send an APIDecorator GET request to "/v2.1/products/%{uxdid}?locale=en_US&currency=USD"
+    Then the response status should be "200"
+    And I save the position in collection "plans" of "title" = "Flight Pass" at "position"
+    And I save the JSON at "plans[%{position}].productCode" as "productCode"
+    And I save the JSON at "plans[%{position}].price" as "price"
+    Given I generate a guest purchase object for productCode = "%{productCode}", price = "%{price}", email = "random", and uxdId = "%{uxdid}"
+    And I save the generated JSON at "email" as "email"
+    When I send an APIDecorator POST request to "/v2/guestpurchase/" with the generated body
+    Then the response status should be "200"
+    When I send a STUB GET request to "/abp/page/aaaActivate.do?gbpsessionid=%{uxdid}"
+    Then the response status should be "200"
+    When I send an APIDecorator GET request to "/v2/switchdevice/%{uxdid}"
+    Then the response status should be "200"
+    And I save the JSON at "switchDeviceCode" as "switchDeviceCode"
+    When I generate a mobile GBP SessionId with airlineCode = "DAL", tailNumber = "0DAL2", and deviceMacAddress = "random" and store it at "uxdid2"
+    And I send a CloudDao GET request to "/v2/token/%{uxdid2}"
+    Then the response status should be "200"
+    And the JSON response at "uxdId" should be "%{uxdid2}"
+    Given I generate an object with the following attributes:
+      | uxdId            | %{uxdid2}           |
+      | emailAddress     | %{email}            |
+      | switchDeviceCode | %{switchDeviceCode} |
+    When I send an APIDecorator POST request to "/v2/switchdevice/" with the generated body
+    Then the response status should be "200"
+
+  @SwitchDevice @HealthCheck @Regression
+  Scenario: Validate switch device returns proper schemas in all endpoints of the flow
+    When I generate a mobile GBP SessionId with airlineCode = "DAL", tailNumber = "0DAL2", and deviceMacAddress = "random" and store it at "uxdid"
+    And I send a CloudDao GET request to "/v2/token/%{uxdid}"
+    Then the response status should be "200"
+    And the JSON response at "uxdId" should be "%{uxdid}"
+    When I send an APIDecorator GET request to "/v2.1/products/%{uxdid}?locale=en_US&currency=USD"
+    Then the response status should be "200"
+    And I save the position in collection "plans" of "title" = "Flight Pass" at "position"
+    And I save the JSON at "plans[%{position}].productCode" as "productCode"
+    And I save the JSON at "plans[%{position}].price" as "price"
+    Given I generate a guest purchase object for productCode = "%{productCode}", price = "%{price}", email = "random", and uxdId = "%{uxdid}"
+    And I save the generated JSON at "email" as "email"
+    When I send an APIDecorator POST request to "/v2/guestpurchase/" with the generated body
+    Then the response status should be "200"
+    When I send a STUB GET request to "/abp/page/aaaActivate.do?gbpsessionid=%{uxdid}"
+    Then the response status should be "200"
+    When I send an APIDecorator GET request to "/v2/switchdevice/%{uxdid}"
+    Then the response status should be "200"
+    And the JSON response should include the following:
+      | trackingId       |
+      | statusCode       |
+      | statusMsg        |
+      | switchDeviceCode |
+    And I save the JSON at "switchDeviceCode" as "switchDeviceCode"
+    When I generate a mobile GBP SessionId with airlineCode = "DAL", tailNumber = "0DAL2", and deviceMacAddress = "random" and store it at "uxdid2"
+    And I send a CloudDao GET request to "/v2/token/%{uxdid2}"
+    Then the response status should be "200"
+    And the JSON response at "uxdId" should be "%{uxdid2}"
+    Given I generate an object with the following attributes:
+      | uxdId            | %{uxdid2}           |
+      | emailAddress     | %{email}            |
+      | switchDeviceCode | %{switchDeviceCode} |
+    When I send an APIDecorator POST request to "/v2/switchdevice/" with the generated body
+    Then the response status should be "200"
+    And the JSON response should include the following:
+      | trackingId |
+      | statusCode |
+      | statusMsg  |
+
+  @SwitchDevice @HealthCheck @Regression
+  Scenario: Validate switch device schemas contain proper data types in all endpoints
+    When I generate a mobile GBP SessionId with airlineCode = "DAL", tailNumber = "0DAL2", and deviceMacAddress = "random" and store it at "uxdid"
+    And I send a CloudDao GET request to "/v2/token/%{uxdid}"
+    Then the response status should be "200"
+    And the JSON response at "uxdId" should be "%{uxdid}"
+    When I send an APIDecorator GET request to "/v2.1/products/%{uxdid}?locale=en_US&currency=USD"
+    Then the response status should be "200"
+    And I save the position in collection "plans" of "title" = "Flight Pass" at "position"
+    And I save the JSON at "plans[%{position}].productCode" as "productCode"
+    And I save the JSON at "plans[%{position}].price" as "price"
+    Given I generate a guest purchase object for productCode = "%{productCode}", price = "%{price}", email = "random", and uxdId = "%{uxdid}"
+    And I save the generated JSON at "email" as "email"
+    When I send an APIDecorator POST request to "/v2/guestpurchase/" with the generated body
+    Then the response status should be "200"
+    When I send a STUB GET request to "/abp/page/aaaActivate.do?gbpsessionid=%{uxdid}"
+    Then the response status should be "200"
+    When I send an APIDecorator GET request to "/v2/switchdevice/%{uxdid}"
+    Then the response status should be "200"
+    And the JSON response should have the following data types:
+      | trackingId       | String |
+      | statusCode       | String |
+      | statusMsg        | String |
+      | switchDeviceCode | String |
+    And I save the JSON at "switchDeviceCode" as "switchDeviceCode"
+    When I generate a mobile GBP SessionId with airlineCode = "DAL", tailNumber = "0DAL2", and deviceMacAddress = "random" and store it at "uxdid2"
+    And I send a CloudDao GET request to "/v2/token/%{uxdid2}"
+    Then the response status should be "200"
+    And the JSON response at "uxdId" should be "%{uxdid2}"
+    Given I generate an object with the following attributes:
+      | uxdId            | %{uxdid2}           |
+      | emailAddress     | %{email}            |
+      | switchDeviceCode | %{switchDeviceCode} |
+    When I send an APIDecorator POST request to "/v2/switchdevice/" with the generated body
+    Then the response status should be "200"
+    And the JSON response should have the following data types:
+      | trackingId | String |
+      | statusCode | String |
+      | statusMsg  | String |
+
+  @SwitchDevice @HealthCheck @Regression
+  Scenario: Validate switch device success returns proper data in the responses
+    When I generate a mobile GBP SessionId with airlineCode = "DAL", tailNumber = "0DAL2", and deviceMacAddress = "random" and store it at "uxdid"
+    And I send a CloudDao GET request to "/v2/token/%{uxdid}"
+    Then the response status should be "200"
+    And the JSON response at "uxdId" should be "%{uxdid}"
+    When I send an APIDecorator GET request to "/v2.1/products/%{uxdid}?locale=en_US&currency=USD"
+    Then the response status should be "200"
+    And I save the position in collection "plans" of "title" = "Flight Pass" at "position"
+    And I save the JSON at "plans[%{position}].productCode" as "productCode"
+    And I save the JSON at "plans[%{position}].price" as "price"
+    Given I generate a guest purchase object for productCode = "%{productCode}", price = "%{price}", email = "random", and uxdId = "%{uxdid}"
+    And I save the generated JSON at "email" as "email"
+    When I send an APIDecorator POST request to "/v2/guestpurchase/" with the generated body
+    Then the response status should be "200"
+    When I send a STUB GET request to "/abp/page/aaaActivate.do?gbpsessionid=%{uxdid}"
+    Then the response status should be "200"
+    When I send an APIDecorator GET request to "/v2/switchdevice/%{uxdid}"
+    Then the response status should be "200"
+    And the JSON response should be the following:
+      | trackingId | %{uxdid} |
+      | statusCode | 200      |
+      | statusMsg  | Success  |
+    And I save the JSON at "switchDeviceCode" as "switchDeviceCode"
+    When I generate a mobile GBP SessionId with airlineCode = "DAL", tailNumber = "0DAL2", and deviceMacAddress = "random" and store it at "uxdid2"
+    And I send a CloudDao GET request to "/v2/token/%{uxdid2}"
+    Then the response status should be "200"
+    And the JSON response at "uxdId" should be "%{uxdid2}"
+    Given I generate an object with the following attributes:
+      | uxdId            | %{uxdid2}           |
+      | emailAddress     | %{email}            |
+      | switchDeviceCode | %{switchDeviceCode} |
+    When I send an APIDecorator POST request to "/v2/switchdevice/" with the generated body
+    Then the response status should be "200"
+    And the JSON response should be the following:
+      | trackingId | %{uxdid2} |
+      | statusCode | 200       |
+      | statusMsg  | Success   |
+
+  @SwitchDevice @Negative @Regression
+  Scenario: Validate invalid uxdid when getting switch device code from current guest returns proper error code and message
+    When I generate a mobile GBP SessionId with airlineCode = "DAL", tailNumber = "0DAL2", and deviceMacAddress = "random" and store it at "uxdid"
+    And I send a CloudDao GET request to "/v2/token/%{uxdid}"
+    Then the response status should be "200"
+    And the JSON response at "uxdId" should be "%{uxdid}"
+    When I send an APIDecorator GET request to "/v2.1/products/%{uxdid}?locale=en_US&currency=USD"
+    Then the response status should be "200"
+    And I save the position in collection "plans" of "title" = "Flight Pass" at "position"
+    And I save the JSON at "plans[%{position}].productCode" as "productCode"
+    And I save the JSON at "plans[%{position}].price" as "price"
+    Given I generate a guest purchase object for productCode = "%{productCode}", price = "%{price}", email = "random", and uxdId = "%{uxdid}"
+    And I save the generated JSON at "email" as "email"
+    When I send an APIDecorator POST request to "/v2/guestpurchase/" with the generated body
+    Then the response status should be "200"
+    When I send a STUB GET request to "/abp/page/aaaActivate.do?gbpsessionid=%{uxdid}"
+    Then the response status should be "200"
+    When I send an APIDecorator GET request to "/v2/switchdevice/INVALID"
+    Then the response status should be "404"
+    And the JSON response should be the following:
+      | statusCode | 404                               |
+      | statusMsg  | TokenInfo could not be retrieved. |
+    And the JSON response should not include the following:
+      | switchDeviceCode |
+
+  @SwitchDevice @Negative @Regression
+  Scenario: Validate invalid uxdid when switching device returns proper error code and message
+    When I generate a mobile GBP SessionId with airlineCode = "DAL", tailNumber = "0DAL2", and deviceMacAddress = "random" and store it at "uxdid"
+    And I send a CloudDao GET request to "/v2/token/%{uxdid}"
+    Then the response status should be "200"
+    And the JSON response at "uxdId" should be "%{uxdid}"
+    When I send an APIDecorator GET request to "/v2.1/products/%{uxdid}?locale=en_US&currency=USD"
+    Then the response status should be "200"
+    And I save the position in collection "plans" of "title" = "Flight Pass" at "position"
+    And I save the JSON at "plans[%{position}].productCode" as "productCode"
+    And I save the JSON at "plans[%{position}].price" as "price"
+    Given I generate a guest purchase object for productCode = "%{productCode}", price = "%{price}", email = "random", and uxdId = "%{uxdid}"
+    And I save the generated JSON at "email" as "email"
+    When I send an APIDecorator POST request to "/v2/guestpurchase/" with the generated body
+    Then the response status should be "200"
+    When I send a STUB GET request to "/abp/page/aaaActivate.do?gbpsessionid=%{uxdid}"
+    Then the response status should be "200"
+    When I send an APIDecorator GET request to "/v2/switchdevice/%{uxdid}"
+    Then the response status should be "200"
+    And the JSON response should be the following:
+      | trackingId | %{uxdid} |
+      | statusCode | 200      |
+      | statusMsg  | Success  |
+    And I save the JSON at "switchDeviceCode" as "switchDeviceCode"
+    When I generate a mobile GBP SessionId with airlineCode = "DAL", tailNumber = "0DAL2", and deviceMacAddress = "random" and store it at "uxdid2"
+    And I send a CloudDao GET request to "/v2/token/%{uxdid2}"
+    Then the response status should be "200"
+    And the JSON response at "uxdId" should be "%{uxdid2}"
+    Given I generate an object with the following attributes:
+      | uxdId            | INVALID             |
+      | emailAddress     | %{email}            |
+      | switchDeviceCode | %{switchDeviceCode} |
+    When I send an APIDecorator POST request to "/v2/switchdevice/" with the generated body
+    Then the response status should be "404"
+    And the JSON response should be the following:
+      | statusCode | 404                                          |
+      | statusMsg  | Copy TokenInfo :  service invocation failed. |
+
+  @SwitchDevice @Negative @Regression
+  Scenario: Validate invalid email with switching device returns proper error code and message
+    When I generate a mobile GBP SessionId with airlineCode = "DAL", tailNumber = "0DAL2", and deviceMacAddress = "random" and store it at "uxdid"
+    And I send a CloudDao GET request to "/v2/token/%{uxdid}"
+    Then the response status should be "200"
+    And the JSON response at "uxdId" should be "%{uxdid}"
+    When I send an APIDecorator GET request to "/v2.1/products/%{uxdid}?locale=en_US&currency=USD"
+    Then the response status should be "200"
+    And I save the position in collection "plans" of "title" = "Flight Pass" at "position"
+    And I save the JSON at "plans[%{position}].productCode" as "productCode"
+    And I save the JSON at "plans[%{position}].price" as "price"
+    Given I generate a guest purchase object for productCode = "%{productCode}", price = "%{price}", email = "random", and uxdId = "%{uxdid}"
+    And I save the generated JSON at "email" as "email"
+    When I send an APIDecorator POST request to "/v2/guestpurchase/" with the generated body
+    Then the response status should be "200"
+    When I send a STUB GET request to "/abp/page/aaaActivate.do?gbpsessionid=%{uxdid}"
+    Then the response status should be "200"
+    When I send an APIDecorator GET request to "/v2/switchdevice/%{uxdid}"
+    Then the response status should be "200"
+    And the JSON response should be the following:
+      | trackingId | %{uxdid} |
+      | statusCode | 200      |
+      | statusMsg  | Success  |
+    And I save the JSON at "switchDeviceCode" as "switchDeviceCode"
+    When I generate a mobile GBP SessionId with airlineCode = "DAL", tailNumber = "0DAL2", and deviceMacAddress = "random" and store it at "uxdid2"
+    And I send a CloudDao GET request to "/v2/token/%{uxdid2}"
+    Then the response status should be "200"
+    And the JSON response at "uxdId" should be "%{uxdid2}"
+    Given I generate an object with the following attributes:
+      | uxdId            | %{uxdid}            |
+      | emailAddress     | INVALID             |
+      | switchDeviceCode | %{switchDeviceCode} |
+    When I send an APIDecorator POST request to "/v2/switchdevice/" with the generated body
+    Then the response status should be "404"
+    And the JSON response should be the following:
+      | statusCode | 404                                          |
+      | statusMsg  | Copy TokenInfo :  service invocation failed. |
+
+  @SwitchDevice @Negative @Regression
+  Scenario: Validate invalid switch device code returns proper error code and message
+    When I generate a mobile GBP SessionId with airlineCode = "DAL", tailNumber = "0DAL2", and deviceMacAddress = "random" and store it at "uxdid"
+    And I send a CloudDao GET request to "/v2/token/%{uxdid}"
+    Then the response status should be "200"
+    And the JSON response at "uxdId" should be "%{uxdid}"
+    When I send an APIDecorator GET request to "/v2.1/products/%{uxdid}?locale=en_US&currency=USD"
+    Then the response status should be "200"
+    And I save the position in collection "plans" of "title" = "Flight Pass" at "position"
+    And I save the JSON at "plans[%{position}].productCode" as "productCode"
+    And I save the JSON at "plans[%{position}].price" as "price"
+    Given I generate a guest purchase object for productCode = "%{productCode}", price = "%{price}", email = "random", and uxdId = "%{uxdid}"
+    And I save the generated JSON at "email" as "email"
+    When I send an APIDecorator POST request to "/v2/guestpurchase/" with the generated body
+    Then the response status should be "200"
+    When I send a STUB GET request to "/abp/page/aaaActivate.do?gbpsessionid=%{uxdid}"
+    Then the response status should be "200"
+    When I send an APIDecorator GET request to "/v2/switchdevice/%{uxdid}"
+    Then the response status should be "200"
+    And the JSON response should be the following:
+      | trackingId | %{uxdid} |
+      | statusCode | 200      |
+      | statusMsg  | Success  |
+    And I save the JSON at "switchDeviceCode" as "switchDeviceCode"
+    When I generate a mobile GBP SessionId with airlineCode = "DAL", tailNumber = "0DAL2", and deviceMacAddress = "random" and store it at "uxdid2"
+    And I send a CloudDao GET request to "/v2/token/%{uxdid2}"
+    Then the response status should be "200"
+    And the JSON response at "uxdId" should be "%{uxdid2}"
+    Given I generate an object with the following attributes:
+      | uxdId            | %{uxdid} |
+      | emailAddress     | %{email} |
+      | switchDeviceCode | INVALID  |
+    When I send an APIDecorator POST request to "/v2/switchdevice/" with the generated body
+    Then the response status should be "404"
+    And the JSON response should be the following:
+      | statusCode | 404                                          |
+      | statusMsg  | Copy TokenInfo :  service invocation failed. |
+
+  @SwitchDevice @Negative @Regression
+  Scenario: Validate missing uxdid returns proper error code and message
+    When I generate a mobile GBP SessionId with airlineCode = "DAL", tailNumber = "0DAL2", and deviceMacAddress = "random" and store it at "uxdid"
+    And I send a CloudDao GET request to "/v2/token/%{uxdid}"
+    Then the response status should be "200"
+    And the JSON response at "uxdId" should be "%{uxdid}"
+    When I send an APIDecorator GET request to "/v2.1/products/%{uxdid}?locale=en_US&currency=USD"
+    Then the response status should be "200"
+    And I save the position in collection "plans" of "title" = "Flight Pass" at "position"
+    And I save the JSON at "plans[%{position}].productCode" as "productCode"
+    And I save the JSON at "plans[%{position}].price" as "price"
+    Given I generate a guest purchase object for productCode = "%{productCode}", price = "%{price}", email = "random", and uxdId = "%{uxdid}"
+    And I save the generated JSON at "email" as "email"
+    When I send an APIDecorator POST request to "/v2/guestpurchase/" with the generated body
+    Then the response status should be "200"
+    When I send a STUB GET request to "/abp/page/aaaActivate.do?gbpsessionid=%{uxdid}"
+    Then the response status should be "200"
+    When I send an APIDecorator GET request to "/v2/switchdevice/%{uxdid}"
+    Then the response status should be "200"
+    And the JSON response should be the following:
+      | trackingId | %{uxdid} |
+      | statusCode | 200      |
+      | statusMsg  | Success  |
+    And I save the JSON at "switchDeviceCode" as "switchDeviceCode"
+    When I generate a mobile GBP SessionId with airlineCode = "DAL", tailNumber = "0DAL2", and deviceMacAddress = "random" and store it at "uxdid2"
+    And I send a CloudDao GET request to "/v2/token/%{uxdid2}"
+    Then the response status should be "200"
+    And the JSON response at "uxdId" should be "%{uxdid2}"
+    Given I generate an object with the following attributes:
+      | emailAddress     | %{email}            |
+      | switchDeviceCode | %{switchDeviceCode} |
+    When I send an APIDecorator POST request to "/v2/switchdevice/" with the generated body
+    Then the response status should be "400"
+    And the JSON response should be the following:
+      | statusCode | 400         |
+      | statusMsg  | Bad request |
+
+  @SwitchDevice @Negative @Regression
+  Scenario: Validate missing email returns proper error code and message
+    When I generate a mobile GBP SessionId with airlineCode = "DAL", tailNumber = "0DAL2", and deviceMacAddress = "random" and store it at "uxdid"
+    And I send a CloudDao GET request to "/v2/token/%{uxdid}"
+    Then the response status should be "200"
+    And the JSON response at "uxdId" should be "%{uxdid}"
+    When I send an APIDecorator GET request to "/v2.1/products/%{uxdid}?locale=en_US&currency=USD"
+    Then the response status should be "200"
+    And I save the position in collection "plans" of "title" = "Flight Pass" at "position"
+    And I save the JSON at "plans[%{position}].productCode" as "productCode"
+    And I save the JSON at "plans[%{position}].price" as "price"
+    Given I generate a guest purchase object for productCode = "%{productCode}", price = "%{price}", email = "random", and uxdId = "%{uxdid}"
+    And I save the generated JSON at "email" as "email"
+    When I send an APIDecorator POST request to "/v2/guestpurchase/" with the generated body
+    Then the response status should be "200"
+    When I send a STUB GET request to "/abp/page/aaaActivate.do?gbpsessionid=%{uxdid}"
+    Then the response status should be "200"
+    When I send an APIDecorator GET request to "/v2/switchdevice/%{uxdid}"
+    Then the response status should be "200"
+    And the JSON response should be the following:
+      | trackingId | %{uxdid} |
+      | statusCode | 200      |
+      | statusMsg  | Success  |
+    And I save the JSON at "switchDeviceCode" as "switchDeviceCode"
+    When I generate a mobile GBP SessionId with airlineCode = "DAL", tailNumber = "0DAL2", and deviceMacAddress = "random" and store it at "uxdid2"
+    And I send a CloudDao GET request to "/v2/token/%{uxdid2}"
+    Then the response status should be "200"
+    And the JSON response at "uxdId" should be "%{uxdid2}"
+    Given I generate an object with the following attributes:
+      | uxdId            | %{uxdid}            |
+      | switchDeviceCode | %{switchDeviceCode} |
+    When I send an APIDecorator POST request to "/v2/switchdevice/" with the generated body
+    Then the response status should be "400"
+    And the JSON response should be the following:
+      | statusCode | 400         |
+      | statusMsg  | Bad request |
+
+  @SwitchDevice @Negative @Regression
+  Scenario: Validate missing switch device code returns proper error code and message
+    When I generate a mobile GBP SessionId with airlineCode = "DAL", tailNumber = "0DAL2", and deviceMacAddress = "random" and store it at "uxdid"
+    And I send a CloudDao GET request to "/v2/token/%{uxdid}"
+    Then the response status should be "200"
+    And the JSON response at "uxdId" should be "%{uxdid}"
+    When I send an APIDecorator GET request to "/v2.1/products/%{uxdid}?locale=en_US&currency=USD"
+    Then the response status should be "200"
+    And I save the position in collection "plans" of "title" = "Flight Pass" at "position"
+    And I save the JSON at "plans[%{position}].productCode" as "productCode"
+    And I save the JSON at "plans[%{position}].price" as "price"
+    Given I generate a guest purchase object for productCode = "%{productCode}", price = "%{price}", email = "random", and uxdId = "%{uxdid}"
+    And I save the generated JSON at "email" as "email"
+    When I send an APIDecorator POST request to "/v2/guestpurchase/" with the generated body
+    Then the response status should be "200"
+    When I send a STUB GET request to "/abp/page/aaaActivate.do?gbpsessionid=%{uxdid}"
+    Then the response status should be "200"
+    When I send an APIDecorator GET request to "/v2/switchdevice/%{uxdid}"
+    Then the response status should be "200"
+    And the JSON response should be the following:
+      | trackingId | %{uxdid} |
+      | statusCode | 200      |
+      | statusMsg  | Success  |
+    And I save the JSON at "switchDeviceCode" as "switchDeviceCode"
+    When I generate a mobile GBP SessionId with airlineCode = "DAL", tailNumber = "0DAL2", and deviceMacAddress = "random" and store it at "uxdid2"
+    And I send a CloudDao GET request to "/v2/token/%{uxdid2}"
+    Then the response status should be "200"
+    And the JSON response at "uxdId" should be "%{uxdid2}"
+    Given I generate an object with the following attributes:
+      | uxdId        | %{uxdid} |
+      | emailAddress | %{email} |
+    When I send an APIDecorator POST request to "/v2/switchdevice/" with the generated body
+    Then the response status should be "400"
+    And the JSON response should be the following:
+      | statusCode | 400         |
+      | statusMsg  | Bad request |
+
+  @SwitchDevice @Positive @Regression
+  Scenario: Validate proper user info after switching device and the uxdid should have an active session
+    When I generate a mobile GBP SessionId with airlineCode = "DAL", tailNumber = "0DAL2", and deviceMacAddress = "random" and store it at "uxdid"
+    And I send a CloudDao GET request to "/v2/token/%{uxdid}"
+    Then the response status should be "200"
+    And the JSON response at "uxdId" should be "%{uxdid}"
+    And I save the JSON at "simpleDeviceInfo.clientIp" as "ipAddress"
+    And I save the JSON at "simpleDeviceInfo.macAddress" as "macAddress"
+    When I send an APIDecorator GET request to "/v2.1/products/%{uxdid}?locale=en_US&currency=USD"
+    Then the response status should be "200"
+    And I save the position in collection "plans" of "title" = "Flight Pass" at "position"
+    And I save the JSON at "plans[%{position}].productCode" as "productCode"
+    And I save the JSON at "plans[%{position}].price" as "price"
+    Given I generate a guest purchase object for productCode = "%{productCode}", price = "%{price}", email = "random", and uxdId = "%{uxdid}"
+    And I save the generated JSON at "email" as "email"
+    When I send an APIDecorator POST request to "/v2/guestpurchase/" with the generated body
+    Then the response status should be "200"
+    When I send a STUB GET request to "/abp/page/aaaActivate.do?gbpsessionid=%{uxdid}"
+    Then the response status should be "200"
+    When I send an APIDecorator GET request to "/v2/switchdevice/%{uxdid}"
+    Then the response status should be "200"
+    And the JSON response should be the following:
+      | trackingId | %{uxdid} |
+      | statusCode | 200      |
+      | statusMsg  | Success  |
+    And I save the JSON at "switchDeviceCode" as "switchDeviceCode"
+    When I generate a mobile GBP SessionId with airlineCode = "DAL", tailNumber = "0DAL2", and deviceMacAddress = "random" and store it at "uxdid2"
+    And I send a CloudDao GET request to "/v2/token/%{uxdid2}"
+    Then the response status should be "200"
+    And the JSON response at "uxdId" should be "%{uxdid2}"
+    Given I generate an object with the following attributes:
+      | uxdId            | %{uxdid2}           |
+      | emailAddress     | %{email}            |
+      | switchDeviceCode | %{switchDeviceCode} |
+    When I send an APIDecorator POST request to "/v2/switchdevice/" with the generated body
+    Then the response status should be "200"
+    And the JSON response should be the following:
+      | trackingId | %{uxdid2} |
+      | statusCode | 200       |
+      | statusMsg  | Success   |
+    And I send a CloudDao GET request to "/v2/token/%{uxdid2}"
+    Then the response status should be "200"
+    And the JSON response should be the following:
+      | uxdId                                    | %{uxdid2} |
+      | activated                                | true      |
+      | loggedInStatus                           | true      |
+      | attributeStore.previousSwitchDeviceUxdId | %{uxdid}  |
+      | emailAddress                             | %{email}  |
+    And the JSON response should not be the following:
+      | switchDeviceCode | %{switchDeviceCode} |
+
+  @SwitchDevice @Positive @Regression
+  Scenario: Validate proper user info after switching device and the old device should no longer have active session
+    When I generate a mobile GBP SessionId with airlineCode = "DAL", tailNumber = "0DAL2", and deviceMacAddress = "random" and store it at "uxdid"
+    And I send a CloudDao GET request to "/v2/token/%{uxdid}"
+    Then the response status should be "200"
+    And the JSON response at "uxdId" should be "%{uxdid}"
+    And I save the JSON at "simpleDeviceInfo.clientIp" as "ipAddress"
+    And I save the JSON at "simpleDeviceInfo.macAddress" as "macAddress"
+    When I send an APIDecorator GET request to "/v2.1/products/%{uxdid}?locale=en_US&currency=USD"
+    Then the response status should be "200"
+    And I save the position in collection "plans" of "title" = "Flight Pass" at "position"
+    And I save the JSON at "plans[%{position}].productCode" as "productCode"
+    And I save the JSON at "plans[%{position}].price" as "price"
+    Given I generate a guest purchase object for productCode = "%{productCode}", price = "%{price}", email = "random", and uxdId = "%{uxdid}"
+    And I save the generated JSON at "email" as "email"
+    When I send an APIDecorator POST request to "/v2/guestpurchase/" with the generated body
+    Then the response status should be "200"
+    When I send a STUB GET request to "/abp/page/aaaActivate.do?gbpsessionid=%{uxdid}"
+    Then the response status should be "200"
+    When I send an APIDecorator GET request to "/v2/switchdevice/%{uxdid}"
+    Then the response status should be "200"
+    And the JSON response should be the following:
+      | trackingId | %{uxdid} |
+      | statusCode | 200      |
+      | statusMsg  | Success  |
+    And I save the JSON at "switchDeviceCode" as "switchDeviceCode"
+    And I send a CloudDao GET request to "/v2/token/%{uxdid}"
+    Then the response status should be "200"
+    And the JSON response should be the following:
+      | uxdId            | %{uxdid}            |
+      | activated        | true                |
+      | loggedInStatus   | true                |
+      | emailAddress     | %{email}            |
+      | switchDeviceCode | %{switchDeviceCode} |
+    When I generate a mobile GBP SessionId with airlineCode = "DAL", tailNumber = "0DAL2", and deviceMacAddress = "random" and store it at "uxdid2"
+    And I send a CloudDao GET request to "/v2/token/%{uxdid2}"
+    Then the response status should be "200"
+    And the JSON response at "uxdId" should be "%{uxdid2}"
+    Given I generate an object with the following attributes:
+      | uxdId            | %{uxdid2}           |
+      | emailAddress     | %{email}            |
+      | switchDeviceCode | %{switchDeviceCode} |
+    When I send an APIDecorator POST request to "/v2/switchdevice/" with the generated body
+    Then the response status should be "200"
+    And the JSON response should be the following:
+      | trackingId | %{uxdid2} |
+      | statusCode | 200       |
+      | statusMsg  | Success   |
+    And I send a CloudDao GET request to "/v2/token/%{uxdid2}"
+    Then the response status should be "200"
+    And the JSON response should be the following:
+      | uxdId                                    | %{uxdid2} |
+      | activated                                | true      |
+      | loggedInStatus                           | true      |
+      | attributeStore.previousSwitchDeviceUxdId | %{uxdid}  |
+      | emailAddress                             | %{email}  |
+    And the JSON response should not be the following:
+      | switchDeviceCode | %{switchDeviceCode} |
+    And I send a CloudDao GET request to "/v2/token/%{uxdid}"
+    Then the response status should be "404"
+    And the JSON response should be the following:
+      | statusCode | 404              |
+      | statusMsg  | UxdId is expired |

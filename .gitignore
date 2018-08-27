@@ -1,0 +1,28 @@
+## IntelliJ IDEA files ##
+.idea
+classes
+
+##Project files##
+.classpath
+.project
+.settings/
+bin/
+
+## Gradle files ##
+.gradle
+build
+out
+
+## Logs ##
+src/logs
+
+## Reports ##
+test-reports
+test-output
+
+## Selenium ##
+automation-screenshots
+*.png
+
+## Mac OS Files ##
+*.iml

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+<suite name="IFS Integration Regression Suite">
+    <test name="All Features Test">
+        <classes>
+            <class name="lib.framework.BaseTestCase"/>
+        </classes>
+    </test> <!-- Test -->
+</suite><!-- Suite -->
